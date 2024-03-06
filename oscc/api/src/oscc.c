@@ -1024,7 +1024,7 @@ oscc_result_t clear_device_names( device_names_s * const names_ptr )
     {
         uint i;
 
-        for ( i = 0; i < names_ptr->size; i++ )
+        for ( i = 0; i < 8; i++ )
         {
             if( names_ptr->name[i] != NULL )
             {
