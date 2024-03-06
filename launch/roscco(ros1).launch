@@ -1,0 +1,5 @@
+<launch>
+    <!-- rosrun roscco roscco_node _can_channel=0 -->
+    <node pkg="roscco" type="roscco_node" name="roscco_node" output="screen"/>
+    <!-- <node pkg="roscco" type="roscco_node" name="roscco_node" output="screen" respawn="true"/> --> <!-- AVC20_WS_200327 --> 
+</launch>

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="3">  
+  <name>roscco</name>
+  <version>1.0.0</version>
+  <description>An OSCC to ROS interface</description>
+  <maintainer email="support@polysync.io">PolySync</maintainer>
+  <license>MIT</license>
+  <url type="github">https://github.com/PolySync/roscco/</url>
+  <author email="rbrown@polysync.io">Robert Brown</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>rclcpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>autoware_can_msgs</build_depend> <!-- AVC20_WS_200326 -->
+  <build_depend>roscco_msgs</build_depend>
+  <build_depend>autoware_auto_vehicle_msgs</build_depend> <!--HJK for autoware-->
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  
+
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>autoware_can_msgs</exec_depend>
+  <exec_depend>roscco_msgs</exec_depend> <!-- AVC20_WS_200326 -->
+  <exec_depend>autoware_auto_vehicle_msgs</exec_depend> <!--HJK for autoware-->
+  <export>
+  <build_type>ament_cmake</build_type>
+  </export>
+</package>

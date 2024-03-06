@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "oscc.h": "c",
+        "types.h": "c",
+        "tuple": "c"
+    }
+}

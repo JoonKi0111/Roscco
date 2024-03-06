@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="roscco" exec="oscc_to_ros_node" name="oscc_to_ros_node" />
+    <node pkg="roscco" exec="ros_to_oscc_node" name="ros_to_oscc_node" />
+    <!-- <node pkg="roscco" exec="roscco2aw" name="roscco2aw"/> -->
+</launch>
+
