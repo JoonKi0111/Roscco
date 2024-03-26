@@ -9,11 +9,12 @@ extern "C" {
 
 #include "rclcpp/rclcpp.hpp"
 #include <memory>
+#include <chrono>
 #include <roscco_msgs/msg/brake_command.hpp>
 #include <roscco_msgs/msg/enable_disable.hpp>
 #include <roscco_msgs/msg/steering_command.hpp>
 #include <roscco_msgs/msg/throttle_command.hpp>
-#include <std_msgs/msg/float64.hpp> // HJK
+#include <std_msgs/msg/header.hpp>
 
 namespace roscco_component
 {
@@ -30,9 +31,6 @@ public:
    */
   //  * @param public_nh  The public node handle to use for ROS subscribers.
   //  * @param private_nh The private node handle for ROS parameters.
-
-  // RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh);
-  // explicit RosToOscc(const rclcpp::NodeOptions & node_options);
 
   explicit RosToOscc(const rclcpp::NodeOptions & node_options);
 
@@ -73,14 +71,18 @@ public:
    */
   void enableDisableCallback(const roscco_msgs::msg::EnableDisable& msg);
 
+  void timer_callback();
+
 private:
   rclcpp::Subscription<roscco_msgs::msg::BrakeCommand>::SharedPtr topic_brake_command_;
   rclcpp::Subscription<roscco_msgs::msg::SteeringCommand>::SharedPtr topic_steering_command_;
   rclcpp::Subscription<roscco_msgs::msg::ThrottleCommand>::SharedPtr topic_throttle_command_;
   rclcpp::Subscription<roscco_msgs::msg::EnableDisable>::SharedPtr topic_enable_disable_command_;
-  rclcpp::TimerBase::SharedPtr timer_; // HJK
 
-  int can_channel;
+  rclcpp::Publisher<std_msgs::msg::Header>::SharedPtr topic_time_;
+
+  rclcpp::TimerBase::SharedPtr timer_;
+
   oscc_result_t ret;
   
 };

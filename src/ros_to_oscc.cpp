@@ -1,5 +1,4 @@
 #include <roscco/ros_to_oscc.h>
-#include <chrono>
 
 using namespace std::chrono_literals;
 
@@ -38,12 +37,15 @@ RosToOscc::RosToOscc(const rclcpp::NodeOptions & node_options) : Node("ros_to_os
     this->create_subscription<roscco_msgs::msg::EnableDisable>(
       "enable_disable", rclcpp::QoS(1), std::bind(&RosToOscc::enableDisableCallback, this,std::placeholders::_1));
 
+  topic_time_ =this->create_publisher<std_msgs::msg::Header>("time_from_roscco", rclcpp::QoS(1));
+
+  timer_ = this->create_wall_timer(500ms, std::bind(&RosToOscc::timer_callback, this));
+
   if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0)
   {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"Failed to unblock SIGIO");
   }
-
-};
+}
 
 void RosToOscc::brakeCommandCallback(const roscco_msgs::msg::BrakeCommand& msg)
 {
@@ -60,11 +62,11 @@ void RosToOscc::brakeCommandCallback(const roscco_msgs::msg::BrakeCommand& msg)
   {
     RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"OSCC_WARNING occured while trying send the brake position.");
   }
-};
+
+}
 
 void RosToOscc::steeringCommandCallback(const roscco_msgs::msg::SteeringCommand& msg)
 {    
-
   oscc_result_t ret = OSCC_ERROR;
   
   ret = oscc_publish_steering_torque(msg.steering_torque);
@@ -76,8 +78,7 @@ void RosToOscc::steeringCommandCallback(const roscco_msgs::msg::SteeringCommand&
   {
     RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"OSCC_WARNING occured while trying send the brake position.");
   }
-
-};
+}
 
 void RosToOscc::throttleCommandCallback(const roscco_msgs::msg::ThrottleCommand& msg)
 {
@@ -110,6 +111,13 @@ void RosToOscc::enableDisableCallback(const roscco_msgs::msg::EnableDisable& msg
   {
     RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"OSCC_WARNING occured while trying to enable or disable control.");
   }
+}
+
+void RosToOscc::timer_callback()
+{
+  std_msgs::msg::Header msg;
+  msg.stamp = get_clock()->now();
+  topic_time_ -> publish(msg);
 }
 
 } // namespace roscco_component
