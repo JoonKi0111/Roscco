@@ -13,6 +13,10 @@ extern "C" {
 #include <roscco_msgs/msg/enable_disable.hpp>
 #include <roscco_msgs/msg/steering_command.hpp>
 #include <roscco_msgs/msg/throttle_command.hpp>
+#include <std_msgs/msg/float64.hpp> // HJK
+
+namespace roscco_component
+{
 
 class RosToOscc : public rclcpp::Node
 {
@@ -30,7 +34,8 @@ public:
   // RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh);
   // explicit RosToOscc(const rclcpp::NodeOptions & node_options);
 
-  explicit RosToOscc();
+  explicit RosToOscc(const rclcpp::NodeOptions & node_options);
+
   /**
    * @brief Callback function to publish ROS BrakeCommand messages to OSCC.
    *
@@ -67,24 +72,17 @@ public:
    * @param msg ROS EnableDisable message to be consumed.
    */
   void enableDisableCallback(const roscco_msgs::msg::EnableDisable& msg);
-  //void canInfoCallback(const autoware_can_msgs::CANInfo::ConstPtr& msg); //AVC20_WS_200328
-
-  //double steering_angle_report = 0.; //AVC20_WS_200328
-
-  //void closedLoopControl( double setpoint, roscco::SteeringCommand& output, double steering_angle_report ); //AVC20_WS_200329
-
-  //void canInfoCallback(const autoware_can_msgs::CANInfo::ConstPtr& msg); //AVC20_WS_200328
-
-  //double steering_angle_report = 0.; //AVC20_WS_200328
-
-  //void closedLoopControl( double setpoint, roscco::SteeringCommand& output, double steering_angle_report ); //AVC20_WS_200329
 
 private:
   rclcpp::Subscription<roscco_msgs::msg::BrakeCommand>::SharedPtr topic_brake_command_;
-
   rclcpp::Subscription<roscco_msgs::msg::SteeringCommand>::SharedPtr topic_steering_command_;
   rclcpp::Subscription<roscco_msgs::msg::ThrottleCommand>::SharedPtr topic_throttle_command_;
   rclcpp::Subscription<roscco_msgs::msg::EnableDisable>::SharedPtr topic_enable_disable_command_;
+  rclcpp::TimerBase::SharedPtr timer_; // HJK
+
+  int can_channel;
+  oscc_result_t ret;
+  
 };
 
 //AVC20_WS_200328
@@ -96,5 +94,7 @@ private:
  * @param steering angle position
  */
 //void closedLoopControl( double setpoint, roscco::SteeringCommand& output, double steering_angle_report );
+
+}
 
 #endif  // ROS_TO_OSCC_H

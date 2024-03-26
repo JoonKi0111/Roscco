@@ -25,6 +25,9 @@ extern "C" {
 #define DEG2RAD 0.0174533
 #define WHEEL_SPEED_RATIO 0.03125
 
+namespace roscco_component
+{
+
 static rclcpp::Publisher<roscco_msgs::msg::BrakeReport>::SharedPtr topic_brake_report_;
 static rclcpp::Publisher<roscco_msgs::msg::SteeringReport>::SharedPtr topic_steering_report_;
 static rclcpp::Publisher<roscco_msgs::msg::ThrottleReport>::SharedPtr topic_throttle_report_;
@@ -35,7 +38,8 @@ static rclcpp::Publisher<roscco_msgs::msg::CANInfo>::SharedPtr topic_can_info_;
 class OsccToRos : public rclcpp::Node
 {
 private:
-
+  rclcpp::TimerBase::SharedPtr timer_;
+  
 public:
   
   /**
@@ -47,10 +51,8 @@ public:
   * @param public_nh  The public node handle to use for ROS publishers.
   * @param private_nh The private node handle for ROS parameters.
    */
-  // OsccToRos(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh);
-  // explicit OsccToRos(const rclcpp::NodeOptions & node_options);
-  explicit OsccToRos();
-
+  
+  explicit OsccToRos(const rclcpp::NodeOptions & node_options);
 
   /**
    * @brief Callback function to publish oscc_steering_report messages on ROS.
@@ -128,5 +130,7 @@ public:
   
   static void cast_callback(OSCCTYPE* report,rclcpp::Publisher<ROSMSGTYPE>& pub);
 };
+
+}
 
 #endif  // OSCC_TO_ROS_H

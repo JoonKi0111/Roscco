@@ -18,7 +18,6 @@
 #include "oscc.h"
 #include "internal/oscc.h"
 
-
 static int global_oscc_can_socket = UNINITIALIZED_SOCKET;
 static int global_vehicle_can_socket = UNINITIALIZED_SOCKET;
 
@@ -161,7 +160,7 @@ oscc_result_t oscc_enable( void )
 
         if (result == OSCC_OK )
         {
-            result = oscc_enable_steering( );
+            // result = oscc_enable_steering( ); // HJK
         }
     }
 
@@ -207,7 +206,6 @@ oscc_result_t oscc_publish_brake_position( double brake_position )
         OSCC_BRAKE_COMMAND_CAN_ID,
         (void *) &brake_cmd,
         sizeof(brake_cmd) );
-
 
     return result;
 }
@@ -266,7 +264,6 @@ oscc_result_t oscc_subscribe_to_brake_reports( void (*callback)(oscc_brake_repor
         brake_report_callback = callback;
         result = OSCC_OK;
     }
-
 
     return result;
 }
@@ -965,12 +962,13 @@ oscc_result_t construct_interfaces_list( device_names_s * const names_ptr )
         }
 
         names_ptr->name = (char**) malloc(lines * sizeof(char*));
-
+        printf("dynamic allocated names_ptr->name %p\n",(void*)&names_ptr->name); // HJK 
         uint i;
 
         for (i = 0; i < lines; i++ )
         {
             names_ptr->name[i] = (char*) malloc(IFNAMSIZ * sizeof(char));
+            printf("dynamic allocated names_ptr->name[%d] %p\n",i,(void*)&names_ptr->name[i]); // HJK 
         }
 
         rewind( file_handler );
@@ -1024,11 +1022,12 @@ oscc_result_t clear_device_names( device_names_s * const names_ptr )
     {
         uint i;
 
-        for ( i = 0; i < 8; i++ )
+        for ( i = 0; i < 9; i++ )
         {
             if( names_ptr->name[i] != NULL )
             {
                 free( names_ptr->name[i] );
+                printf("freed names_ptr->name[%d] %p\n",i,(void*)&names_ptr->name[i]); // HJK 
 
                 names_ptr->name[i] = NULL;
             }
@@ -1038,6 +1037,7 @@ oscc_result_t clear_device_names( device_names_s * const names_ptr )
         if( names_ptr->name != NULL )
         {
             free( names_ptr->name );
+            printf("freed names_ptr->name %p\n",(void*)&names_ptr->name); // HJK 
 
             names_ptr->name = NULL;
         }

@@ -1,9 +1,12 @@
 #include <roscco/ros_to_oscc.h>
+#include <chrono>
 
-// RosToOscc::RosToOscc(ros::NodeHandle* public_nh, ros::NodeHandle* private_nh)
-// RosToOscc::RosToOscc(const rclcpp::NodeOptions & node_options) 
-// : Node("ros_to_oscc", node_options)
-RosToOscc::RosToOscc() : Node("ros_to_oscc")
+using namespace std::chrono_literals;
+
+namespace roscco_component
+{
+
+RosToOscc::RosToOscc(const rclcpp::NodeOptions & node_options) : Node("ros_to_oscc", node_options)
 {
   sigset_t mask;
   sigset_t orig_mask;
@@ -20,32 +23,34 @@ RosToOscc::RosToOscc() : Node("ros_to_oscc")
   }
 
   topic_brake_command_ =
-      this->create_subscription<roscco_msgs::msg::BrakeCommand>("brake_command", 10, std::bind(&RosToOscc::brakeCommandCallback,this,std::placeholders::_1));
+    this->create_subscription<roscco_msgs::msg::BrakeCommand>(
+      "brake_command", rclcpp::QoS(1), std::bind(&RosToOscc::brakeCommandCallback,this,std::placeholders::_1));
 
   topic_steering_command_ =
-      this->create_subscription<roscco_msgs::msg::SteeringCommand>("steering_command", 10, std::bind(&RosToOscc::steeringCommandCallback, this,std::placeholders::_1));
+    this->create_subscription<roscco_msgs::msg::SteeringCommand>(
+      "steering_command", rclcpp::QoS(1), std::bind(&RosToOscc::steeringCommandCallback, this,std::placeholders::_1));
 
   topic_throttle_command_ =
-      this->create_subscription<roscco_msgs::msg::ThrottleCommand>("throttle_command", 10, std::bind(&RosToOscc::throttleCommandCallback, this,std::placeholders::_1));
+    this->create_subscription<roscco_msgs::msg::ThrottleCommand>(
+      "throttle_command", rclcpp::QoS(1), std::bind(&RosToOscc::throttleCommandCallback, this,std::placeholders::_1));
 
   topic_enable_disable_command_ =
-     this->create_subscription<roscco_msgs::msg::EnableDisable>("enable_disable", 10, std::bind(&RosToOscc::enableDisableCallback, this,std::placeholders::_1));
-
-  //topic_can_info_ = public_nh->subscribe<autoware_can_msgs::CANInfo>("can_info", 10, &RosToOscc::canInfoCallback, this); //AVC20_WS_200328
-
-  //topic_pid_report_ = public_nh->advertise<roscco::PIDReport>("pid_report", 10); //AVC20_WS_200329 
+    this->create_subscription<roscco_msgs::msg::EnableDisable>(
+      "enable_disable", rclcpp::QoS(1), std::bind(&RosToOscc::enableDisableCallback, this,std::placeholders::_1));
 
   if (sigprocmask(SIG_SETMASK, &orig_mask, NULL) < 0)
   {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"Failed to unblock SIGIO");
   }
+
 };
 
 void RosToOscc::brakeCommandCallback(const roscco_msgs::msg::BrakeCommand& msg)
 {
+
   oscc_result_t ret = OSCC_ERROR;
 
-  ret = oscc_publish_brake_position(msg.brake_position);
+  ret = oscc_publish_brake_position(msg.brake_position); 
 
   if (ret == OSCC_ERROR)
   {
@@ -58,14 +63,10 @@ void RosToOscc::brakeCommandCallback(const roscco_msgs::msg::BrakeCommand& msg)
 };
 
 void RosToOscc::steeringCommandCallback(const roscco_msgs::msg::SteeringCommand& msg)
-{
+{    
+
   oscc_result_t ret = OSCC_ERROR;
   
-  //AVC20_WS_200328
-  //roscco::SteeringCommand output;
-  //output.header.stamp = ros::Time::now();
-  //closedLoopControl(msg->steering_torque, output, steering_angle_report); //msg->steering_torque : angle_command, steering_angle_report : angle_measurement, output : torque_command
-  //ret = oscc_publish_steering_torque(output.steering_torque); //segmentation fault
   ret = oscc_publish_steering_torque(msg.steering_torque);
   if (ret == OSCC_ERROR)
   {
@@ -73,14 +74,15 @@ void RosToOscc::steeringCommandCallback(const roscco_msgs::msg::SteeringCommand&
   }
   else if (ret == OSCC_WARNING)
   {
-    RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"OSCC_WARNING occured while trying send the steering torque.");
+    RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"OSCC_WARNING occured while trying send the brake position.");
   }
+
 };
 
 void RosToOscc::throttleCommandCallback(const roscco_msgs::msg::ThrottleCommand& msg)
 {
-  oscc_result_t ret = OSCC_ERROR;
 
+  oscc_result_t ret = OSCC_ERROR;
   ret = oscc_publish_throttle_position(msg.throttle_position);
 
   if (ret == OSCC_ERROR)
@@ -95,6 +97,7 @@ void RosToOscc::throttleCommandCallback(const roscco_msgs::msg::ThrottleCommand&
 
 void RosToOscc::enableDisableCallback(const roscco_msgs::msg::EnableDisable& msg)
 {
+
   oscc_result_t ret = OSCC_ERROR;
 
   ret = msg.enable_control ? oscc_enable() : oscc_disable();
@@ -108,3 +111,8 @@ void RosToOscc::enableDisableCallback(const roscco_msgs::msg::EnableDisable& msg
     RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"OSCC_WARNING occured while trying to enable or disable control.");
   }
 }
+
+} // namespace roscco_component
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(roscco_component::RosToOscc)
