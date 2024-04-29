@@ -44,6 +44,14 @@ typedef enum
     OSCC_WARNING
 } oscc_result_t;
 
+typedef struct
+{
+    oscc_result_t result;
+    oscc_result_t steering_result;
+    oscc_result_t brake_result;
+    oscc_result_t throttle_result;
+}Oscc_custom_result;
+
 /**
  * @brief Looks for available CAN channels and automatically detects which
  *        channel is OSCC control and which channel is vehicle CAN for feedback.
@@ -88,7 +96,9 @@ oscc_result_t oscc_close(unsigned int channel);
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_enable( void );
+// oscc_result_t oscc_enable( void );
+Oscc_custom_result oscc_enable( void );
+
 
 
 /**
@@ -99,7 +109,8 @@ oscc_result_t oscc_enable( void );
  * @return OSCC_ERROR or OSCC_OK
  *
  */
-oscc_result_t oscc_disable( void );
+
+Oscc_custom_result oscc_disable( void );
 
 
 /**

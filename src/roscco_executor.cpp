@@ -1,24 +1,27 @@
-#include <memory>
 #include "roscco/ros_to_oscc.h"
+#include <string>
 #include "rclcpp/rclcpp.hpp"
 
 void oscc(oscc_result_t ret_, const int &can_channel)
 {
-  if (ret_ != OSCC_OK)
+  Oscc_custom_result custom_result;
+  custom_result.result = ret_;
+
+  if (custom_result.result != OSCC_OK)
   {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"Could not initialize OSCC");
   }
 
-  ret_ = oscc_disable();
+  custom_result = oscc_disable();
 
-  if (ret_ != OSCC_OK)
+  if (custom_result.result != OSCC_OK)
   {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"Could not disable OSCC");
   }
 
-  ret_ = oscc_close(can_channel);
+  custom_result.result = oscc_close(can_channel);
 
-  if (ret_ != OSCC_OK)
+  if (custom_result.result != OSCC_OK)
   {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"Could not close OSCC connection");
   }
@@ -30,12 +33,16 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
   rclcpp::executors::SingleThreadedExecutor exec;
   rclcpp::NodeOptions options;
+
   oscc_result_t ret = OSCC_ERROR;
+
   ret = oscc_init();
   auto RosToOscc = std::make_shared<roscco_component::RosToOscc>(options);
   exec.add_node(RosToOscc);
   exec.spin();
-  oscc(ret, 0);
+
+  oscc(ret, 1);
+
   rclcpp::shutdown();
   return 0;
 }

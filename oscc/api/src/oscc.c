@@ -147,46 +147,71 @@ oscc_result_t oscc_close( unsigned int channel )
     }
 }
 
-oscc_result_t oscc_enable( void )
+Oscc_custom_result oscc_enable( void )
 {
-    oscc_result_t result = OSCC_ERROR;
+    Oscc_custom_result custom_result;
 
+    custom_result.result = OSCC_ERROR;
+    custom_result.steering_result = OSCC_ERROR;
+    custom_result.throttle_result = OSCC_ERROR;
+    custom_result.brake_result = OSCC_ERROR;
 
-    result = oscc_enable_brakes( );
+    custom_result.steering_result = oscc_enable_steering( ); // HJK
 
-    if ( result == OSCC_OK )
+    if ( custom_result.steering_result == OSCC_OK )
     {
-        result = oscc_enable_throttle( );
+        // custom_result.throttle_result = oscc_enable_throttle( ); // HJK
 
-        if (result == OSCC_OK )
+        if (custom_result.throttle_result == OSCC_OK )
         {
-            // result = oscc_enable_steering( ); // HJK
+            // custom_result.brake_result = oscc_enable_brakes( ); // HJK
         }
     }
 
+    if(custom_result.steering_result == OSCC_OK && custom_result.throttle_result == OSCC_OK && custom_result.brake_result == OSCC_OK)
+    {
+        custom_result.result = OSCC_OK;
+    }
+    else
+    {
+        custom_result.result = OSCC_ERROR;
+    }
 
-    return result;
+    return custom_result;
 }
 
-oscc_result_t oscc_disable( void )
+Oscc_custom_result oscc_disable( void )
 {
-    oscc_result_t result = OSCC_ERROR;
+    
+    Oscc_custom_result custom_result;
 
+    custom_result.result = OSCC_ERROR;
+    custom_result.steering_result = OSCC_ERROR;
+    custom_result.throttle_result = OSCC_ERROR;
+    custom_result.brake_result = OSCC_ERROR;
 
-    result = oscc_disable_brakes( );
+    custom_result.brake_result = oscc_disable_brakes( );
 
-    if ( result == OSCC_OK )
+    if ( custom_result.brake_result == OSCC_OK )
     {
-        result = oscc_disable_throttle( );
+        custom_result.throttle_result = oscc_disable_throttle( );
 
-        if ( result == OSCC_OK )
+        if ( custom_result.throttle_result == OSCC_OK )
         {
-            result = oscc_disable_steering( );
+            custom_result.steering_result = oscc_disable_steering( );
         }
     }
+    
+    if(custom_result.steering_result == OSCC_OK && custom_result.throttle_result == OSCC_OK && custom_result.brake_result == OSCC_OK)
+    {
+        custom_result.result = OSCC_OK;
+    }
+    else
+    {
+        custom_result.result = OSCC_ERROR;
+    }
 
-
-    return result;
+    return custom_result;
 }
 
 oscc_result_t oscc_publish_brake_position( double brake_position )
@@ -334,6 +359,7 @@ oscc_result_t oscc_subscribe_to_obd_messages( void (*callback)(struct can_frame 
 /* Internal */
 oscc_result_t oscc_enable_brakes( void )
 {
+    
     oscc_result_t result = OSCC_ERROR;
 
 
@@ -683,6 +709,7 @@ oscc_result_t oscc_search_can( can_contains_s(*search_callback)( const char * ),
 
 can_contains_s auto_init_all_can( const char *can_channel )
 {
+
     if ( can_channel == NULL )
     {
         can_contains_s contents =

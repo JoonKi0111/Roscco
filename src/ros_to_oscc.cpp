@@ -38,6 +38,7 @@ RosToOscc::RosToOscc(const rclcpp::NodeOptions & node_options) : Node("ros_to_os
       "enable_disable", rclcpp::QoS(1), std::bind(&RosToOscc::enableDisableCallback, this,std::placeholders::_1));
 
   topic_time_ =this->create_publisher<std_msgs::msg::Header>("time_from_roscco", rclcpp::QoS(1));
+  pub_roscco_status_ =this->create_publisher<roscco_msgs::msg::RosccoStatus>("/roscco_status", rclcpp::QoS(1));
 
   timer_ = this->create_wall_timer(500ms, std::bind(&RosToOscc::timer_callback, this));
 
@@ -98,19 +99,40 @@ void RosToOscc::throttleCommandCallback(const roscco_msgs::msg::ThrottleCommand&
 
 void RosToOscc::enableDisableCallback(const roscco_msgs::msg::EnableDisable& msg)
 {
+  Oscc_custom_result custom_result;
 
-  oscc_result_t ret = OSCC_ERROR;
+  custom_result = msg.enable_control ? oscc_enable() : oscc_disable();
 
-  ret = msg.enable_control ? oscc_enable() : oscc_disable();
-
-  if (ret == OSCC_ERROR)
+  if (custom_result.result == OSCC_ERROR)
   {
     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"),"OSCC_ERROR occured while trying to enable or disable control.");
   }
-  else if (ret == OSCC_WARNING)
+  else if (custom_result.result == OSCC_WARNING)
   {
     RCLCPP_WARN(rclcpp::get_logger("rclcpp"),"OSCC_WARNING occured while trying to enable or disable control.");
   }
+
+  roscco_msgs::msg::RosccoStatus status_msg;
+
+  if(msg.enable_control == true)
+  {
+    if(custom_result.steering_result == OSCC_OK) status_msg.steering_status = true;
+    else status_msg.steering_status = false;
+    if(custom_result.brake_result == OSCC_OK) status_msg.brake_status = true;
+    else status_msg.brake_status = false;
+    if(custom_result.throttle_result == OSCC_OK) status_msg.throttle_status = true;
+    else status_msg.throttle_status = false;
+  }
+  else if(msg.enable_control == false)
+  {
+    if(custom_result.steering_result == OSCC_OK) status_msg.steering_status = false;
+    else status_msg.steering_status = true;
+    if(custom_result.brake_result == OSCC_OK) status_msg.brake_status = false;
+    else status_msg.brake_status = true;
+    if(custom_result.throttle_result == OSCC_OK) status_msg.throttle_status = false;
+    else status_msg.throttle_status = true;
+  }
+  pub_roscco_status_->publish(status_msg);
 }
 
 void RosToOscc::timer_callback()
