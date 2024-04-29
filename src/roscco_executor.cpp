@@ -35,7 +35,7 @@ int main(int argc, char * argv[])
   auto RosToOscc = std::make_shared<roscco_component::RosToOscc>(options);
   exec.add_node(RosToOscc);
   exec.spin();
-  oscc(ret, 0);
+  oscc(ret, 1);
   rclcpp::shutdown();
   return 0;
 }
